@@ -1,0 +1,168 @@
+{
+  "info": {
+    "_postman_id": "1a6bbf88-2075-4684-821c-62889bffc46e",
+    "name": "Reqres UserManagement Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "48222824",
+    "_collection_link": "https://go.postman.co/collection/48222824-1a6bbf88-2075-4684-821c-62889bffc46e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const jsonData = pm.response.json();\nconst token = jsonData.token;\npm.environment.set(\"token\", token);\nconsole.log(\"Token:\", token);\nconsole.log(\"Token from environment:\", pm.environment.get(\"token\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"eve.holt@reqres.in\",\r\n    \"password\": \"cityslicka\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const jsonData = pm.response.json();\nconst userId = jsonData.id;\npm.environment.set(\"userId\", userId);\nconsole.log(\"User ID:\", userId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"morpheus\",\r\n    \"job\": \"leader\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Capture old values before the update\nconst requestBody = JSON.parse(pm.request.body.raw);\n\n// Store each field as \"old_<field>\" in environment\nObject.keys(requestBody).forEach(key => {\n    pm.environment.set(\"old_\" + key, pm.environment.get(key) || \"N/A\");\n});\n\n// Also store the sent (new) values so post-response can compare\npm.environment.set(\"_updatePayload\", JSON.stringify(requestBody));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Retrieve the payload that was sent\nconst sentPayload = JSON.parse(pm.environment.get(\"_updatePayload\") || \"{}\");\n\n// Parse the response body\nconst responseBody = pm.response.json();\n\nconsole.log(\"=== Update User — Attribute Change Log ===\");\n\nObject.keys(sentPayload).forEach(key => {\n    const oldValue = pm.environment.get(\"old_\" + key);\n    const newValue = responseBody[key] !== undefined ? responseBody[key] : sentPayload[key];\n\n    if (oldValue !== undefined && oldValue !== null && oldValue !== \"N/A\") {\n        if (String(oldValue) !== String(newValue)) {\n            console.log(`Attribute: \"${key}\" | Old Value: \"${oldValue}\" | New Value: \"${newValue}\"`);\n        } else {\n            console.log(`Attribute: \"${key}\" | No change (Value: \"${newValue}\")`);\n        }\n    } else {\n        console.log(`Attribute: \"${key}\" | Old Value: N/A (not tracked) | New Value: \"${newValue}\"`);\n    }\n});\n\nconsole.log(\"==========================================\");\n\n// Log response code\nconsole.log(\"=== Response Status ===\");\nconsole.log(`Status Code: ${pm.response.code}`);\nconsole.log(`Status Text: ${pm.response.status}`);\nconsole.log(\"=======================\");\n\n// Cleanup temporary env vars\nObject.keys(sentPayload).forEach(key => {\n    pm.environment.unset(\"old_\" + key);\n});\npm.environment.unset(\"_updatePayload\");"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Sonia\",\r\n  \"job\": \"zion resident\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Get response code from response\nconst responseCode = pm.response.code;\nconsole.log(\"Response Code:\", responseCode);\n\n// Test to display the response code\npm.test(\"Response code is: \" + responseCode, function() {\n    pm.response.to.have.status(responseCode);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
